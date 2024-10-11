@@ -6,9 +6,10 @@ import Loader from "~/components/ui/loader";
 import localFont from "next/font/local";
 import { Faculty } from "~/components/team/faculty-cards";
 import { Fade } from "react-awesome-reveal";
-import { coremem } from "~/data/core";
+// import { coremem } from "~/data/core";
 import { TeamMember } from "~/components/team/team-cards";
 const myFont = localFont({ src: "../../pages/obscura.otf" });
+import { api } from "~/utils/api";
 
 const roleOptions = [
   "Chairman",
@@ -47,10 +48,10 @@ export interface CoreMember {
   email: string;
   name: string;
   branch: string;
-  position: string;
-  linkedin: string;
-  github: string;
-  imageSrc: string;
+  role: string;
+  linkedin: string | null;
+  github: string | null;
+  imageLink: string | null;
 }
 
 export default function Team() {
@@ -65,9 +66,21 @@ export default function Team() {
     return () => clearTimeout(delay);
   }, []); // Empty dependency array to run only once on component mount
 
-  const sortedTeamMembers = coremem.sort(
+
+  const {data:coremem,isLoading,isError} = api.post.getTeam.useQuery();
+
+  if(isLoading){
+    return <h1>Data is loading</h1>
+  }
+
+  if(isError){
+    return <h1>Error occured</h1>
+  }
+
+
+  const sortedTeamMembers = coremem?.sort(
     (a: CoreMember, b: CoreMember) =>
-      roleOptions.indexOf(a.position) - roleOptions.indexOf(b.position),
+      roleOptions.indexOf(a.role) - roleOptions.indexOf(b.role),
   );
 
   return (
@@ -109,7 +122,7 @@ export default function Team() {
                   Team
                 </h2> */}
                 <div className="mt-10 flex flex-wrap justify-center gap-20 pb-10">
-                  {sortedTeamMembers.map((member, index) => (
+                  {sortedTeamMembers?.map((member, index) => (
                     <TeamMember key={index} {...member} />
                   ))}
                 </div>

@@ -1,88 +1,77 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
-// prisma/schema.prisma
 datasource db {
   provider  = "postgresql"
-  url  	    = env("DATABASE_URL")
-  // uncomment next line if you use Prisma <5.10
+  url       = env("DATABASE_URL")
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
-// Necessary for Next auth
 model Account {
-    id                String  @id @default(cuid())
-    userId            String
-    type              String
-    provider          String
-    providerAccountId String
-    refresh_token     String? // @db.Text
-    access_token      String? // @db.Text
-    expires_at        Int?
-    token_type        String?
-    scope             String?
-    id_token          String? // @db.Text
-    session_state     String?
-    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
+  @@unique([provider, providerAccountId])
 }
 
 model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String             @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?            @unique
   phone         String?
   branch        String?
   year          Int?
-  emailVerified DateTime?
   username      String?            @unique
   image         String?
   role          String?            @default("user")
-  bio           String?            @db.Text
+  bio           String?
   isAdmin       Boolean            @default(false)
+  emailVerified DateTime?
+  github        String             @default("/")
+  linkedin      String?            @default("/")
   accounts      Account[]
-  github String   @default("/")
-  linkedin String? @default("/")
-  sessions      Session[]
   Certificate   Certificate[]
   Events        EventParticipant[]
+  sessions      Session[]
 }
 
-// user - branch year username role bio 
-// add certificate 
-// add event
-
-
 model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
+  identifier String
+  token      String   @unique
+  expires    DateTime
 
-    @@unique([identifier, token])
+  @@unique([identifier, token])
 }
 
 model Certificate {
   id      String           @id @unique @default(cuid())
-  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId  String
   date    DateTime         @default(now())
   type    CertificateTypes
-  event   Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   eventId Int
-  desc    String?          @db.Text
+  desc    String?
+  event   Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
   @@index([userId])
@@ -97,13 +86,37 @@ model Event {
   type         EventTypes
   images       Json?
   organizer    String
-  description  String             @db.Text
+  description  String
   amount       Int?               @default(0)
   filter       EventFilter
   certificates Certificate[]
   participants EventParticipant[]
 
   @@index([name])
+}
+
+model EventParticipant {
+  eventId Int
+  userId  String
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, eventId])
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Team {
+  id        Int     @id @unique @default(autoincrement())
+  // custid    String  @unique
+  email     String  @unique
+  name      String
+  branch    String
+  role      String
+  linkedin  String?
+  github    String?
+  imageLink String?
 }
 
 enum CertificateTypes {
@@ -133,29 +146,4 @@ enum EventFilter {
   Year2021to2022
   Year2022to2023
   Year2023to2024
-}
-
-model EventParticipant {
-  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId Int
-  user    User  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId  String
-
-  @@id([userId,eventId])
-  @@unique([userId,eventId])
-  @@index([userId])
-  @@index([eventId])
-}
-
-
-model Team {
-  id          Int    @id @unique @default(autoincrement())
-  custid      String    @unique
-  email       String    @unique
-  name        String
-  branch      String
-  role        String
-  linkedin    String?
-  github      String?
-  imageLink   String?
 }

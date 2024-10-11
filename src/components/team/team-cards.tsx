@@ -8,25 +8,25 @@ interface TeamMemberProps {
   name: string;
   email: string;
   branch: string;
-  position: string;
-  linkedin: string;
-  github: string;
-  imageSrc: string;
+  role: string;
+  linkedin: string | null;
+  github: string | null;
+  imageLink: string;
 }
 
 export const TeamMember: React.FC<TeamMemberProps> = ({
   name,
-  position,
+  role,
   linkedin,
   github,
-  imageSrc,
+  imageLink,
 }) => {
   return (
     <div className="-m-2 rounded-xl bg-gray-900/5 p-4 ring-1 ring-inset ring-gray-900/10 transition-all hover:ring-blue-500 lg:-m-4 lg:rounded-2xl lg:p-6">
       <div className="flex items-center justify-center gap-4 p-4">
         <div className="relative h-48 w-48 overflow-hidden rounded-md">
           <Image
-            src={imageSrc}
+            src={imageLink}
             width={250}
             height={250}
             alt="main-image"
@@ -37,7 +37,7 @@ export const TeamMember: React.FC<TeamMemberProps> = ({
       </div>
       <div className="text-center">
         <h2 className="text-2xl font-semibold">{name}</h2>
-        <p className="text-blue-500">{position}</p>
+        <p className="text-blue-500">{role}</p>
         <div className="mt-4 flex justify-center gap-4">
           <Link
             className={buttonVariants({
@@ -45,7 +45,7 @@ export const TeamMember: React.FC<TeamMemberProps> = ({
               size: "icon",
               className: "rounded-full transition-colors hover:text-blue-500",
             })}
-            href={linkedin}
+            href={linkedin || "#"}
             target="_blank"
           >
             <LinkedinIcon size={24} />
@@ -56,7 +56,7 @@ export const TeamMember: React.FC<TeamMemberProps> = ({
               size: "icon",
               className: "rounded-full  transition-colors hover:text-gray-600",
             })}
-            href={github}
+            href={github || "#"}
             target="_blank"
           >
             <GithubIcon />
